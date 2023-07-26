@@ -6,7 +6,7 @@ export const listAllCustomers = async (req, res) => {
 
     return res.send(customers.rows);
   } catch (err) {
-    return res.status(500).send(e.message);
+    return res.status(500).send(err.message);
   };
 };
 
@@ -20,7 +20,7 @@ export const listCustomerById = async (req, res) => {
 
     return res.send(customer.rows[0]);
   } catch (err) {
-    return res.status(500).send(e.message);
+    return res.status(500).send(err.message);
   };
 };
 
@@ -61,6 +61,6 @@ export const updateCustomer = async (req, res) => {
 
     return res.sendStatus(201);
   } catch (err) {
-    return res.status(500).send(e.message);
+    return res.status(500).send(err.message);
   };
 };
