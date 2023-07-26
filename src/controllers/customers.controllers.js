@@ -6,7 +6,7 @@ export const listAllCustomers = async (req, res) => {
     const customers = await db.query('SELECT * FROM customers');
 
     const formatedCustomers = customers.rows.map(customer => {
-      return { ...customer, birthday: dayjs(customer.birthday).format('YYYY/MM/DD') };
+      return { ...customer, birthday: dayjs(customer.birthday).format('YYYY-MM-DD') };
     })
 
     return res.send(formatedCustomers);
@@ -23,7 +23,7 @@ export const listCustomerById = async (req, res) => {
     
     if(customer.rowCount === 0) return res.sendStatus(404);
 
-    customer.rows[0].birthday = dayjs(customer.rows[0].birthday).format('YYYY/MM/DD');
+    customer.rows[0].birthday = dayjs(customer.rows[0].birthday).format('YYYY-MM-DD');
 
     return res.send(customer.rows[0]);
   } catch (err) {
@@ -45,7 +45,7 @@ export const createCustomer = async (req, res) => {
       `, [name, phone, cpf, birthday]
     );
 
-    return res.sendStatus(201);
+    return res.sendStatus(200);
   } catch (err) {
     return res.status(500).send(err.message);
   };
