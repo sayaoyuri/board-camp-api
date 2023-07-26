@@ -43,3 +43,24 @@ export const createCustomer = async (req, res) => {
     return res.status(500).send(err.message);
   };
 };
+
+export const updateCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, cpf, birthday } = req.body;
+
+    const existingCpf = await db.query('SELECT * FROM customers WHERE cpf = $1 AND id <> $2;', [cpf, id]);
+    if(existingCpf.rowCount > 0) return res.sendStatus(409);
+
+    const updatedCustomer = await db.query(
+      `UPDATE customers 
+        SET name = $1, phone = $2, cpf = $3, birthday = $4 
+        WHERE id = $5;
+      `, [name, phone, cpf, birthday, id]
+    );
+
+    return res.sendStatus(201);
+  } catch (err) {
+    return res.status(500).send(e.message);
+  };
+};
