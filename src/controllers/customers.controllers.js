@@ -45,7 +45,7 @@ export const createCustomer = async (req, res) => {
       `, [name, phone, cpf, birthday]
     );
 
-    return res.sendStatus(200);
+    return res.sendStatus(201);
   } catch (err) {
     return res.status(500).send(err.message);
   };
@@ -66,7 +66,7 @@ export const updateCustomer = async (req, res) => {
       `, [name, phone, cpf, birthday, id]
     );
 
-    return res.sendStatus(201);
+    return res.sendStatus(200);
   } catch (err) {
     return res.status(500).send(err.message);
   };
