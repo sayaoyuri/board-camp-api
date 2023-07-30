@@ -39,8 +39,8 @@ export const createRental = async (req, res) => {
     if(validCustomer.rowCount === 0) return res.status(400).send('Invalid user ID');
 
     const validGame = await db.query(`
-      SELECT * FROM games WHERE id = $1 AND "stockTotal" > 0;
-    `, [gameId]);
+      SELECT * FROM games WHERE id = $1 AND "stockTotal" >= $2;
+    `, [gameId, daysRented]);
 
     if(validGame.rowCount === 0) return res.status(400).send('Invalid game ID or game is out of stock');
   
