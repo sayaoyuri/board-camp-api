@@ -79,8 +79,26 @@ export const returnRentals = async (req, res) => {
 
     const rental = await db.query(`
       SELECT *, NOW() AS "currentDate" FROM rentals 
-      WHERE id = 1;
+      WHERE id = $1;
     `, [id]);
+
+    if(rental.rowCount === 0) return res.sendStatus(404);
+    if(rental.rows[0].returnDate !== null) return res.status(400).send('Rental has already been returned');
+
+    const rentDate = dayjs(dayjs(rental.rows[0].rentDate).format('YYYY-MM-DD')).unix();
+    const currentDate = dayjs(dayjs(rental.rows[0].currentDate).format('YYYY-MM-DD')).unix();
+    const dueDate = rentDate + (86400 * rental.rows[0].daysRented);
+
+    const isDelayed = currentDate > dueDate;
+
+    const delayFee = isDelayed ? (Math.round(currentDate - dueDate) / 86400) * (rental.rows[0].originalPrice / rental.rows[0].daysRented) : 0;
+
+    const result = db.query(`
+      UPDATE rentals SET "returnDate" = $1, "delayFee" = $2
+        WHERE id = $3
+    `, [dayjs(dayjs(rental.rows[0].currentDate.forma).format('YYYY-MM-DD')), delayFee, id]);
+
+    return res.send();
   } catch (err) {
     return res.status(500).send(err.message);
   }
