@@ -78,25 +78,27 @@ export const returnRentals = async (req, res) => {
     const { id } = req.params;
 
     const rental = await db.query(`
-      SELECT *, NOW() AS "currentDate" FROM rentals 
-      WHERE id = $1;
+      SELECT rentals.*, NOW() AS "currentDate", games."pricePerDay" FROM rentals
+        JOIN games ON rentals."gameId" = games.id  
+        WHERE rentals.id = $1;
     `, [id]);
 
     if(rental.rowCount === 0) return res.sendStatus(404);
     if(rental.rows[0].returnDate !== null) return res.status(400).send('Rental has already been returned');
 
     const rentDate = dayjs(dayjs(rental.rows[0].rentDate).format('YYYY-MM-DD')).unix();
-    const currentDate = dayjs(dayjs(rental.rows[0].currentDate).format('YYYY-MM-DD')).unix();
-    const dueDate = rentDate + (86400 * rental.rows[0].daysRented);
+    const currentDate = dayjs(rental.rows[0].currentDate).format('YYYY-MM-DD');
+    const currentDateUnix = dayjs(currentDate).unix();
+    const dueDateUnix = rentDate + (86400 * rental.rows[0].daysRented);
 
-    const isDelayed = currentDate > dueDate;
+    const isDelayed = currentDateUnix > dueDateUnix;
 
-    const delayFee = isDelayed ? (Math.round(currentDate - dueDate) / 86400) * (rental.rows[0].originalPrice / rental.rows[0].daysRented) : 0;
+    const delayFee = isDelayed ? (Math.round(currentDateUnix - dueDateUnix) / 86400) * rental.rows[0].pricePerDay : 0;
 
-    const result = db.query(`
+    const result = await db.query(`
       UPDATE rentals SET "returnDate" = $1, "delayFee" = $2
         WHERE id = $3
-    `, [dayjs(rental.rows[0].currentDate).format('YYYY/MM/DD'), delayFee, id]);
+    `, [currentDate, delayFee, id]);
 
     return res.send();
   } catch (err) {
