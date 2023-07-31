@@ -51,7 +51,7 @@ export const createRental = async (req, res) => {
         GROUP BY games."stockTotal";
     `, [gameId]);
 
-    if(isAvailable.rows[0].activeRentals >= isAvailable.rows[0].stockTotal) return res.status(400).send('game is out of stock');
+    if(isAvailable.rows[0] && isAvailable.rows[0].activeRentals >= isAvailable.rows[0].stockTotal) return res.status(400).send('game is out of stock');
 
     const result = await db.query(`
       INSERT INTO rentals 
