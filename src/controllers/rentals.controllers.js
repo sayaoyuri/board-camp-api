@@ -96,7 +96,7 @@ export const returnRentals = async (req, res) => {
     const result = db.query(`
       UPDATE rentals SET "returnDate" = $1, "delayFee" = $2
         WHERE id = $3
-    `, [dayjs(dayjs(rental.rows[0].currentDate.forma).format('YYYY-MM-DD')), delayFee, id]);
+    `, [dayjs(rental.rows[0].currentDate).format('YYYY/MM/DD'), delayFee, id]);
 
     return res.send();
   } catch (err) {
