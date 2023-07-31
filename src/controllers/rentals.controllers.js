@@ -39,13 +39,19 @@ export const createRental = async (req, res) => {
     if(validCustomer.rowCount === 0) return res.status(400).send('Invalid user ID');
 
     const validGame = await db.query(`
+      SELECT * FROM games WHERE id = $1;
+    `, [gameId]);
+
+    if(validGame.rowCount === 0 ) return res.status(400).send('Invalid game ID');
+
+    const isAvailable = await db.query(`
       SELECT COUNT(rentals.*) AS "activeRentals", games."stockTotal" FROM rentals
         JOIN games ON rentals."gameId" = games.id
         WHERE rentals."gameId" = $1 AND rentals."returnDate" IS NULL
         GROUP BY games."stockTotal";
     `, [gameId]);
 
-    if(validGame.rowCount === 0 || validGame.rows[0].activeRentals >=  validGame.rows[0].stockTotal) return res.status(400).send('Invalid game ID or game is out of stock');
+    if(isAvailable.rows[0].activeRentals >= isAvailable.rows[0].stockTotal) return res.status(400).send('game is out of stock');
 
     const result = await db.query(`
       INSERT INTO rentals 
@@ -65,4 +71,17 @@ export const createRental = async (req, res) => {
   } catch (err) {
     return res.status(500).send(err.message);
   };
+};
+
+export const returnRentals = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const rental = await db.query(`
+      SELECT *, NOW() AS "currentDate" FROM rentals 
+      WHERE id = 1;
+    `, [id]);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
 };
