@@ -103,3 +103,19 @@ export const returnRentals = async (req, res) => {
     return res.status(500).send(err.message);
   }
 };
+
+export const deleteRental = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const rental = await db.query(`SELECT * FROM rentals WHERE id = $1;`, [id]);
+    if(rental.rowCount === 0) return res.sendStatus(404);
+
+    const result = await db.query(`DELETE FROM rentals WHERE rentals.id = $1 AND rentals."returnDate" IS NOT NULL;`, [id]);
+    if(result.rowCount === 0) return res.status(400).send('Rental is not returned');
+
+    return res.send();
+  } catch (err) {
+    return res.status(500).send(err.message);
+  };
+};
